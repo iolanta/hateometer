@@ -1,123 +1,7 @@
 import requests
 import json
 import os.path
-
-scriptRT = """
-treat = require('treat')
-
-function prepare(splash)
-   find_comments_wrapper = splash:jsfunc([[
-    function (){
-    	var comments = document.getElementsByClassName("comments")[0];
-    	comments.firstChild.lastChild.remove();
-    	comments.firstChild.lastChild.remove();
-        comments.firstChild.firstChild.removeAttribute("async");
-   		comments.firstChild.firstChild.removeAttribute("data-ready");
-    	return comments.innerHTML;
-    }]])
-end
-
-function scrape_comments(splash)
-    local iframe = splash:select('iframe')
-    splash:go(iframe.attributes['src'])
-
-    local comments = splash:select_all('[data-spot-im-class="message-text"]')
-    local text = {}
-    for _, com in ipairs(comments) do
-        text[#text+1] = com.textContent
-    end
-
-    return text
-end
-
-function main(splash, args)
-  splash.images_enabled = false
-  prepare(splash)
-
-  splash:go(args["page"])
-  local title = splash:select("title"):text()
-  local all_comments_page = find_comments_wrapper()
-
-  splash:set_content(all_comments_page)
-  splash:wait(2)
-  local text = scrape_comments(splash)
-
-  return{ name = title, comments = treat.as_array(text) }
-end
-"""
-
-scriptKP = """
-treat = require('treat')
-
-function scrape_comments(splash)
-    script = splash:set_content([[
-        <html><head><script>
-
-        var result;
-        var ready = false;
-        function loadcomments(ArticleClass,id,windowID){
-	       ready = false;
-		   let link = `https://s1.stc.m.kpcdn.net/interactive/api/1/comments/get.js/${windowID}/?comments.direction=page&comments.target.class=${ArticleClass}&comments.target.id=${id}&comments.target.spot=0&comments.number=1&sub=1`
-		   window[windowID] = function(data){
-	           let cmts = data.meta.comments;
-			   let text =[];
-			   for(i = 0; i < cmts.length; ++i){
-			      text.push(cmts[i].text);
-			    }
-			      result = text;
-	        }
-		    var script = document.createElement("script");
-		    document.getElementsByTagName('head')[0].appendChild(script);
-		    script.onload = function() {
-				ready = true;
-		     };
-		    script.async = false;
-		    script.src = link;
-}
-
-        </script>
-        </head>
-        <body>
-        </body>
-        </html>
-    ]])
-
-    str = [[loadcomments("]] .. splash.args["articleclass"] .. [[","]] .. splash.args["id"] .. [[","]] .. splash.args["windowID"] .. [[")]]
-    splash:runjs(str)
-    splash:wait(1)
-  	local coms = splash:evaljs("result")
-  	return coms
-end
-
-function main(splash, args)
-    splash.images_enabled = false
-    splash:go(args["page"])
-    local title = splash:select("title"):text()
-
-    return {name = title, comments = scrape_comments(splash)}
-end
-"""
-
-scriptLenta = """
-treat = require('treat')
-json = require('json')
-
-function main(splash, args)
-    splash.images_enabled = false
-    splash:go(args["page"])
-    local title = splash:select("title"):text()
-
-    local response = splash:http_get("https://c.rambler.ru/api/app/126/widget/init/?appId=126&xid=" .. args["page"])
-    local all_com = json.decode(treat.as_string(response.body))["comments"]
-  	local comments = {}
-  	for i = 1, #all_com do
-    	table.insert(comments, all_com[i]["text"])
-    end
-
-    return {name = title, comments = treat.as_array(comments)}
-end
-
-"""
+import urllib.parse
 
 def appendDataToJson(json_data, file_path):
     if not os.path.exists(file_path):
@@ -134,10 +18,14 @@ def appendDataToJson(json_data, file_path):
         with open(file_path, 'w') as fw:
             fw.write(json.dumps(old_json_data, indent=2, ensure_ascii=False))
 
-def getCommentsRT(url):
+def getCommentsRT(key_words):
+    scriptRT = ''
+    with open("scriptRT.lua", 'r') as f:
+        scriptRT = f.read()
+
     resp = requests.get("http://0.0.0.0:8050/execute", params={
     'lua_source': scriptRT,
-    'page': url,
+    'query': "war",
     'timeout': 40
     })
     appendDataToJson(resp.json(), 'all_comments.json')
@@ -155,14 +43,19 @@ def getCommentsKP(url, id, articleClass):
 
     appendDataToJson(resp.json(), 'all_comments.json')
 
-def getCommentsLenta(url):
+def getCommentsLenta(key_words):
+    scriptLenta = ''
+    with open("scriptLenta.lua", 'r') as f:
+        scriptLenta = f.read()
+
+    query = urllib.parse.urlencode({"query": key_words})
+
     resp = requests.get("http://0.0.0.0:8050/execute", params={
     'lua_source': scriptLenta,
-    'page': url,
+    'query': query,
     'timeout': 40
     })
 
-    #print(resp.json())
     appendDataToJson(resp.json(), 'all_comments.json')
 
 def countCom():
@@ -185,7 +78,4 @@ def countCom():
 #getCommentsRT('https://russian.rt.com/nopolitics/article/616066-kniga-kristina-potupchik-telegram')
 #getCommentsRT('https://russian.rt.com/opinion/617412-prohanov-rossiya-tvorcy-mechtateli-gosudarstvo-vozrozhdenie')
 
-#getCommentsLenta("https://lenta.ru/news/2019/04/12/zagitova_gymnastic/")
-
-
-countCom()
+getCommentsLenta("кот Ассанжа")
