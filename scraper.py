@@ -73,6 +73,7 @@ def countCom():
         neutral_comments = json.loads(fn.read())
         print(len(neutral_comments))
 
+countCom()
 #getCommentsKP('https://www.kp.ru/daily/26956/4010007/', '4010007', '13')
 
 #getCommentsRT('https://russian.rt.com/nopolitics/article/616066-kniga-kristina-potupchik-telegram')

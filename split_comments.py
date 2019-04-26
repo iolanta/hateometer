@@ -1,21 +1,4 @@
 import json
-from sklearn.cluster import KMeans
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-
-
-def KMeansClustering(data):
-    vectorizer = CountVectorizer(ngram_range = (1, 2))
-    vect = vectorizer.fit_transform(data)
-    transformer = TfidfTransformer()
-    transform_data = transformer.fit_transform(vect)
-
-    model = KMeans(n_clusters = 2)
-    model.fit(transform_data)
-    all_predictions = model.predict(transform_data)
-
-    for i in range(0, len(data)):
-        print(data[i])
-        print(all_predictions[i])
 
 def SplitComments(all_articles, fpos_name, fneg_name, fneut_name):
     pos_comments = []
