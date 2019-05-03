@@ -57,12 +57,12 @@ def SplitComments(all_articles, fpos_name, fneg_name, fneut_name):
 
     return all_articles
 
+if __name__ == '__main__':
+    all_articles = []
+    with open('all_comments.json', 'r') as f:
+        all_articles = json.loads(f.read())
 
-all_articles = []
-with open('all_comments.json', 'r') as f:
-    all_articles = json.loads(f.read())
+    all_articles = SplitComments(all_articles, "pos_comments.json", "neg_comments.json", "neutral_comments.json")
 
-all_articles = SplitComments(all_articles, "pos_comments.json", "neg_comments.json", "neutral_comments.json")
-
-with open('all_comments.json', 'w') as f:
-    f.write(json.dumps(all_articles, indent=2, ensure_ascii=False))
+    with open('all_comments.json', 'w') as f:
+        f.write(json.dumps(all_articles, indent=2, ensure_ascii=False))
