@@ -79,4 +79,4 @@ if __name__ == '__main__':
     #getCommentsRT('кот Ассанжа')
     #getCommentsRT('https://russian.rt.com/opinion/617412-prohanov-rossiya-tvorcy-mechtateli-gosudarstvo-vozrozhdenie')
 
-    getCommentsLenta("украина донбасс")
+    countCom()

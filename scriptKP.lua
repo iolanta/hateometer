@@ -36,8 +36,8 @@ function scrape_comments(splash)
     str = [[loadcomments("]] .. splash.args["articleclass"] .. [[","]] .. splash.args["id"] .. [[","]] .. splash.args["windowID"] .. [[")]]
     splash:runjs(str)
     splash:wait(1)
-  	local coms = splash:evaljs("result")
-  	return coms
+    local coms = splash:evaljs("result")
+    return coms
 end
 
 function main(splash, args)

@@ -14,7 +14,6 @@ end
 function main(splash, args)
     splash.images_enabled = false
     local response = splash:http_get("https://lenta.ru/search/v2/process?from=0&size=1&sort=1&domain=1&query=" .. args["query"])
-    print("https://lenta.ru/search/v2/process?from=0&size=1&sort=1&domain=1&query=" .. args["query"])
     local comments = {}
     local article = json.decode(treat.as_string(response.body))
     

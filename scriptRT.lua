@@ -25,7 +25,6 @@ function get_comments(splash, article, comments)
    splash:go(article)
    print("looking for comments")
    local url_id = find_comments_wrapper()
-   print(url_id)
    splash:set_content(get_content(url_id['url'], url_id['id']))
    splash:wait(2)
    
@@ -46,9 +45,7 @@ function main(splash, args)
   local len = math.min(#all_articles, 5)
   
   local comments = {}
-  --print(len)
   for i = 1, len do
-	--print("https://russian.rt.com" .. all_articles[i]:getAttribute('href'))
     get_comments(splash,"https://russian.rt.com" .. all_articles[i]:getAttribute('href'),comments)	
   end
 

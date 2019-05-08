@@ -10,6 +10,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 import pickle
 from nltk.corpus import stopwords
+import re
+import pymorphy2
 
 def text_classifier(vectorizer, transformer, classifier):
     return Pipeline(
@@ -32,20 +34,30 @@ def KMeansClustering(data):
         print(data[i])
         print(all_predictions[i])
 
+def ModifyComment(comment):
+    list_words = re.split("[\\s+|\\,+|\\.+|\\:+|\\?+]",comment)
+    list_words = list(filter(lambda x: x != '', list_words))
+    morph = pymorphy2.MorphAnalyzer()
+    for i in range(0,len(list_words)):
+        list_words[i] = morph.parse(list_words[i])[0].normal_form
+
+    comment = ' '.join(list_words)
+    #comment = re.sub('(не\s+)', 'не_', comment)
+    return comment
+
 def TestClassifier(all_comments, labels, sw_rus):
+    #all_comments = list(map(ModifyComment, all_comments))
+    all_comments = list(map(lambda str: re.sub('(не\s+)', 'не_', str), all_comments))
     vect = CountVectorizer(ngram_range = (1, 2))
 
-    for clf in [MultinomialNB, LinearSVC, KNeighborsClassifier, LogisticRegression, DecisionTreeClassifier]:
-        print(clf.__name__)
+    for clf in [MultinomialNB(), LinearSVC(), KNeighborsClassifier(), LogisticRegression(solver='liblinear'), DecisionTreeClassifier()]:
+        print(type(clf))
         print('precision: %f' % (cross_val_score(text_classifier(vect,
-            TfidfTransformer(), clf()), all_comments, labels, scoring = 'precision', cv = 5).mean()))
+            TfidfTransformer(), clf), all_comments, labels, scoring = 'precision', cv = 5).mean()))
         print('recall: %f' % (cross_val_score(text_classifier(vect,
-            TfidfTransformer(), clf()), all_comments, labels, scoring = 'recall', cv = 5).mean()))
+            TfidfTransformer(), clf), all_comments, labels, scoring = 'recall', cv = 5).mean()))
 
-def TestRegression(all_comments, labels):
-    vect = CountVectorizer(ngram_range = (1, 2))
 
-    print('r2: %f' % (cross_val_score(text_classifier(vect, TfidfTransformer(), SVR(gamma='scale')), all_comments, labels, scoring = 'r2', cv = 5).mean()))
 
 if __name__ == '__main__':
     pos_comments = []
@@ -55,12 +67,17 @@ if __name__ == '__main__':
         pos_comments = json.loads(f1.read())
         neg_comments = json.loads(f2.read())
 
-    count_com = 520
-    all_comments = pos_comments[0:count_com] + neg_comments[0:count_com]
-    labels = [1] * count_com + [0] * count_com
+    count_pos = 520
+    count_neg = 520
+    all_comments = pos_comments[0:count_pos] + neg_comments[0:count_neg]
+    labels = [1] * count_pos + [0] * count_neg
 
     sw_rus = stopwords.words('russian')
-    #TestClassifier(all_comments, labels, sw_rus)
+    TestClassifier(all_comments, labels, sw_rus)
+    #all_comments = list(map(ModifyComment, all_comments))
+    #vect = CountVectorizer(ngram_range = (1, 2))
+    #X = vect.fit_transform(all_comments)
+    #print(len(vect.get_feature_names()))
 
     model = text_classifier(CountVectorizer(ngram_range = (1, 2)), TfidfTransformer(), LinearSVC())
     model.fit(all_comments, labels)
@@ -68,8 +85,8 @@ if __name__ == '__main__':
     #with open('model.bin', 'wb') as f:
     #    pickle.dump(model, f)
 
-    with open('model.bin', 'rb') as f:
-        loaded_model = pickle.load(f)
-        print(loaded_model.decision_function(["Да этот сморчок уже для женщин не опасен.", "Главное чтобы голова не закружилась от таких стремительных успехов", "Прелесть...", "Хорошо хоть валежник разрешили бесплатно собирать."]))
-        print(loaded_model.decision_function(["д'Артаньян? Или Тер-д'Артаньян?", "Женщину Морганом не назовут.", "Ты тоже можешь набрать кредитов и жить в комфорте и достатке.", "Орел вроде как совершенно китайская компания, не?"]))
-        print(loaded_model.decision_function(["Получается одна большая корзина с яйцами, рискованно...", "лично я жду появления новых серий Сватов, а не всякую американскую муть.",  "Помолчи мусор с московских свалок.", "Смотри-ка, даже записные путирасты громят Милонова, будто он не член Единой России."]))
+    #with open('model.bin', 'rb') as f:
+    #    loaded_model = pickle.load(f)
+    #    print(loaded_model.decision_function(["Да этот сморчок уже для женщин не опасен.", "Главное чтобы голова не закружилась от таких стремительных успехов", "Прелесть...", "Хорошо хоть валежник разрешили бесплатно собирать."]))
+    #    print(loaded_model.decision_function(["д'Артаньян? Или Тер-д'Артаньян?", "Женщину Морганом не назовут.", "Ты тоже можешь набрать кредитов и жить в комфорте и достатке.", "Орел вроде как совершенно китайская компания, не?"]))
+    #    print(loaded_model.decision_function(["Получается одна большая корзина с яйцами, рискованно...", "лично я жду появления новых серий Сватов, а не всякую американскую муть.",  "Помолчи мусор с московских свалок.", "Смотри-ка, даже записные путирасты громят Милонова, будто он не член Единой России."]))
