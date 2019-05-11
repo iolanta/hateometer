@@ -31,7 +31,6 @@ def toneComments(comments):
     neg_com = 0
 
     for num in decision_list:
-        num = round(num, 2)
         if(num < -0.20):
             neg_com += 1
         if(num > 0.20):
