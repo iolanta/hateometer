@@ -3,7 +3,7 @@ import sys
 import urllib.parse
 import requests
 import pickle
-from sklearn.svm import SVC
+import re
 
 def getCommentsLenta(key_words):
     scriptLenta = ''
@@ -18,27 +18,48 @@ def getCommentsLenta(key_words):
     'timeout': 40
     })
 
-    if(not resp.json()['comments']):
+    if(not resp.json()):
         return []
-    return resp.json()['comments']
+    return resp.json()
 
-def toneComments(comments):
-    with open('model.bin', 'rb') as f:
-        loaded_model = pickle.load(f)
-    decision_list = loaded_model.decision_function(comments)
+def new_preprocessor(str):
+    str = str.lower()
+    str = re.sub("(\\s+!+)", "!", str)
+    str = re.sub("(\s+\(+)", "(", str)
+    str = re.sub("(\s+\)+)", ")", str)
+    return str
 
-    pos_com = 0
-    neg_com = 0
+def toneComments(articles, model):
+    results = []
+    for article in articles['list_articles']:
+        coms = article['comments']
 
-    for num in decision_list:
-        if(num < -0.20):
-            neg_com += 1
-        if(num > 0.20):
-            pos_com += 1
+        if(len(coms) == 0):
+            results.append({"title": article['title'], "pos": 0, "neg": 0})
+        else:
+            decision_list = loaded_model.decision_function(coms)
 
-    print(json.dumps({"pos": pos_com, "neg": neg_com}, indent=2, ensure_ascii=False), flush = True)
+            pos_com = 0
+            neg_com = 0
+
+            for num in decision_list:
+                if(num < -0.18):
+                    neg_com += 1
+                if(num > 0.18):
+                    pos_com += 1
+            results.append({"title": article['title'], "pos": pos_com, "neg": neg_com})
+
+    print(json.dumps(results, indent=2, ensure_ascii=False), flush = True)
 
 if __name__ == '__main__':
-    list_all_comments = getCommentsLenta(sys.argv[1])
-    if(len(list_all_comments) != 0):
-        toneComments(list_all_comments)
+    if(sys.argv[1] == "test"):
+        print(json.dumps({"title": 'test', "pos": 10, "neg": 5}, indent=2, ensure_ascii=False), flush = True)
+    else:
+        with open('model.bin', 'rb') as f:
+            loaded_model = pickle.load(f)
+
+        articles = getCommentsLenta(sys.argv[1])
+        if(len(articles) != 0):
+            toneComments(articles, loaded_model)
+        else:
+            print(json.dumps({"title": 'None', "pos": 0, "neg": 0}, indent=2, ensure_ascii=False), flush = True)

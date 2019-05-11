@@ -13,13 +13,20 @@ end
 
 function main(splash, args)
     splash.images_enabled = false
-    local response = splash:http_get("https://lenta.ru/search/v2/process?from=0&size=1&sort=1&domain=1&query=" .. args["query"])
+    local response = splash:http_get("https://lenta.ru/search/v2/process?from=0&size=4&sort=1&domain=1&query=" .. args["query"])
     local comments = {}
-    local article = json.decode(treat.as_string(response.body))
+    local articles = {}
+    local search = json.decode(treat.as_string(response.body))
     
-    if article["matches"][1]["url"] ~= nil then
-	get_comments(splash, article["matches"][1]["url"], comments)
+    local found = #search["matches"]
+    for i = 1, found do
+	articles[i]={}
+	articles[i]["title"] = search["matches"][i]["title"]
+	local url = search["matches"][i]["url"]
+	articles[i]["comments"]= {}
+	get_comments(splash, url, articles[i]["comments"])
+	articles[i]["comments"] = treat.as_array(articles[i]["comments"])
     end
 
-    return {comments = treat.as_array(comments)}
+    return {list_articles = treat.as_array(articles)}
 end

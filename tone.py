@@ -77,15 +77,13 @@ if __name__ == '__main__':
     #sw_rus = stopwords.words('russian')
     #TestClassifier(all_comments, labels, sw_rus)
 
-    model = text_classifier(CountVectorizer(ngram_range = (1, 3), lowercase = False, preprocessor = new_preprocessor,  token_pattern = "[а-яa-z]+[!|\\)|\\(]*", analyzer = "word"),
-        TfidfTransformer(), LogisticRegression(solver='liblinear'))
-    model.fit(all_comments, labels)
+    #model = text_classifier(CountVectorizer(ngram_range = (1, 3), lowercase = False, preprocessor = new_preprocessor,  token_pattern = "[а-яa-z]+[!|\\)|\\(]*", analyzer = "word"),
+    #    TfidfTransformer(), LogisticRegression(solver='liblinear'))
+    #model.fit(all_comments, labels)
 
-    with open('model.bin', 'wb') as f:
-        pickle.dump(model, f)
+    #with open('model.bin', 'wb') as f:
+    #    pickle.dump(model, f)
 
     with open('model.bin', 'rb') as f:
         loaded_model = pickle.load(f)
-        print(loaded_model.decision_function(["Да этот сморчок уже для женщин не опасен.", "Главное чтобы голова не закружилась от таких стремительных успехов", "Прелесть...", "Хорошо хоть валежник разрешили бесплатно собирать."]))
-        print(loaded_model.decision_function(["д'Артаньян? Или Тер-д'Артаньян?", "Женщину Морганом не назовут.", "Ты тоже можешь набрать кредитов и жить в комфорте и достатке.", "Орел вроде как совершенно китайская компания, не?"]))
-        print(loaded_model.decision_function(["Получается одна большая корзина с яйцами, рискованно...", "лично я жду появления новых серий Сватов, а не всякую американскую муть.",  "Помолчи мусор с московских свалок.", "Смотри-ка, даже записные путирасты громят Милонова, будто он не член Единой России."]))
+        print(loaded_model.decision_function(["На упаковку от конфеты МУ-МУ, коровку похожа))))"]))
