@@ -1,0 +1,24 @@
+
+.result-container
+  .result-info
+    span#search-info Первые #{result.length} статей по запросу "#{query}":
+    each article in result
+      .article-container
+        a(href=article.url)
+          .article-title #{article.title}
+        .article-data 
+        -
+          var sum = article.all;
+          var pos_per = (article.pos/sum*100).toPrecision(3)
+          var neg_per = (article.neg/sum*100).toPrecision(3)
+        if sum
+          | Из #{sum} комментариев:         
+          br
+          |
+          | Позитивных: <span class="pos-span">#{article.pos}</span> (<span class="pos-span">#{pos_per}</span>%)  
+          br
+          |
+          | Негативных: <span class="neg-span">#{article.neg}</span> (<span class="neg-span">#{neg_per}</span>%)    
+        else
+         | Комментарии не найдены
+         

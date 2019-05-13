@@ -1,8 +1,144 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+html{
+  font-size: 20px;
+  font-family: 'PT Sans', sans-serif;
 }
 
-a {
-  color: #00B7FF;
+.title {
+  font-size: 85px;
+  font-family: 'Sofia', cursive;
+  text-align: center;
+  margin: 20px;
+}
+
+body{
+  align-items: center;
+  align-content: center;
+}
+
+.search-container{
+  position: relative;
+  width: 850px;
+  margin: 0 auto;
+  background: #FFD4F9;
+}
+
+.article-container{
+  -webkit-box-shadow: 7px 21px 7px 0px rgba(0,0,0,0.07);
+   box-shadow: 7px 21px 7px 0px rgba(0,0,0,0.07);
+   padding: 20px;
+   margin: 5px;
+   margin-left: 10px;
+   margin-right: 10px;
+}
+
+.article-title{
+  margin-bottom: 18px;
+  font-weight: bold;
+  font-size: 23px;
+}
+
+.input_search{
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  height: 42px;
+  padding-left: 15px;
+  font-size: 20px;
+}
+
+.search_ok{
+  border: none;
+  outline: none;
+  background: transparent;
+  height: 42px;
+  width: 42px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: pointer;
+}
+
+.search_ok:before{
+  content: "\f002";
+  font-family: FontAwesome;
+  font-size: 16px;
+  color: #F9F0DA;
+}
+
+.sort-container{
+  text-align: center;
+  width: 830px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 0 auto;
+}
+
+.option-container, .checkbox-container{
+  font-size: 18px;
+}
+
+#search-info{
+  font-size: 18px;
+  color: grey;
+  margin-left: 15px;
+  position: relative;
+  right: -10px;
+}
+
+
+#checkbox_title{
+  position: relative;
+  right: 5px;
+  bottom: -4px;
+  width:20px;
+  height:20px;
+  background:white;
+  border:2px solid #555;
+  margin: 5px;
+}
+
+#sort-type{
+  position: relative;
+  right: -10px;
+}
+
+.pos-span{
+  font-weight: bold;
+  color: green;
+}
+
+.neg-span{
+  font-weight: bold;
+  color: red;
+}
+
+A {
+ text-decoration: none; /* Убирает подчеркивание для ссылок */
+ color: black;
+ font-size: 25px;
+}
+A:hover {
+ color: red; /* Ссылка красного цвета */
+}
+
+select#sort-type {
+    -webkit-appearance: button;
+    -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+    -webkit-padding-end: 20px;
+    -webkit-padding-start: 2px;
+    -webkit-user-select: none;
+    background-image: url(http://i62.tinypic.com/15xvbd5.png), -webkit-linear-gradient(#FAFAFA, #F4F4F4 40%, #E5E5E5);
+    background-position: 97% center;
+    background-repeat: no-repeat;
+    border: 1px solid #AAA;
+    color: #555;
+    font-size: 15px;
+    margin: 5px;
+    overflow: hidden;
+    padding: 5px 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 200px;
 }

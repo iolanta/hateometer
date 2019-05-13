@@ -1,5 +1,20 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  .title Hate-o'-Meter
+  .search-container
+    input.input_search#search(type="text",placeholder="Введите запрос")
+    button.search_ok#search-button(type="submit") 
+  .sort-container  
+    .option-container Сортировать:
+      select#sort-type
+        option(value="1") По релевантности
+        option(value="2") По убыванию даты
+        option(value="3") По возрастанию даты  
+    .checkbox-container
+      input(type="checkbox", id="checkbox_title")
+      .
+        Точная фраза в заголовке
+  .result-container
+  script(src="/javascripts/index.js")
+    
