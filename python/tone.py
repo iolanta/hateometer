@@ -49,17 +49,37 @@ def new_preprocessor(str):
     str = re.sub("(\s+\)+)", ")", str)
     return str
 
+def PreprocessingNegations(comment):
+    comment = comment.lower()
+    comment = re.sub(r"([.,!;:\(\)])", r" \1 ", comment)
+    list_tokens = re.split("\\s+", comment)
+    is_neg = False
+
+    for i in range(0, len(list_tokens)):
+        if(list_tokens[i] == "не"):
+            if(not is_neg):
+                is_neg = True
+                list_tokens[i] = ''
+            else:
+                is_neg = False
+        elif(re.search("[.,!?;:()]", list_tokens[i]) != None):
+            is_neg = False
+        elif(is_neg):
+            list_tokens[i] = "не"+list_tokens[i]
+
+    comment = ' '.join(list_tokens)
+    return comment
+
+
 def TestClassifier(all_comments, labels, sw_rus):
-    #all_comments = list(map(ModifyComment, all_comments))
+    all_comments = list(map(PreprocessingNegations, all_comments))
     #all_comments = list(map(lambda str: re.sub('(не\s+)', 'не_', str), all_comments))
-    vect = CountVectorizer(ngram_range = (1, 3), lowercase = False, preprocessor = new_preprocessor,  token_pattern = "[а-яa-z]+[!|\\)|\\(]*", analyzer = "word")
+    vect = CountVectorizer(ngram_range = (1, 2), lowercase = False, preprocessor = new_preprocessor,  token_pattern = "[а-яa-z]+[!|\\)|\\(]*", analyzer = "word")
 
     for clf in [MultinomialNB(), LinearSVC(), LogisticRegression(solver='liblinear')]:
         print(type(clf))
         print('precision: %f' % (cross_val_score(text_classifier(vect,
             TfidfTransformer(), clf), all_comments, labels, scoring = 'precision', cv = 5).mean()))
-        print('recall: %f' % (cross_val_score(text_classifier(vect,
-            TfidfTransformer(), clf), all_comments, labels, scoring = 'recall', cv = 5).mean()))
 
 if __name__ == '__main__':
     pos_comments = []
@@ -74,8 +94,8 @@ if __name__ == '__main__':
     all_comments = pos_comments[0:count_pos] + neg_comments[0:count_neg]
     labels = [1] * count_pos + [0] * count_neg
 
-    #sw_rus = stopwords.words('russian')
-    #TestClassifier(all_comments, labels, sw_rus)
+    sw_rus = stopwords.words('russian')
+    TestClassifier(all_comments, labels, sw_rus)
 
     #model = text_classifier(CountVectorizer(ngram_range = (1, 3), lowercase = False, preprocessor = new_preprocessor,  token_pattern = "[а-яa-z]+[!|\\)|\\(]*", analyzer = "word"),
     #    TfidfTransformer(), LogisticRegression(solver='liblinear'))
