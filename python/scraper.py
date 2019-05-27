@@ -32,6 +32,10 @@ def getCommentsRT(key_words):
 
 
 def getCommentsKP(url, id, articleClass):
+    scriptKP = ''
+    with open("scriptKP.lua", 'r') as f:
+        scriptKP = f.read()
+
     resp = requests.get("http://0.0.0.0:8050/execute", params={
     'lua_source': scriptKP,
     'page': url,
@@ -45,17 +49,14 @@ def getCommentsKP(url, id, articleClass):
 
 def getCommentsLenta(key_words):
     scriptLenta = ''
-    with open("scriptLenta.lua", 'r') as f:
-        scriptLenta = f.read()
-
+    with open("scriptLenta_old.lua", 'r') as f:
+        scriptLenta_old = f.read()
     query = urllib.parse.urlencode({"query": key_words})
-
     resp = requests.get("http://0.0.0.0:8050/execute", params={
-    'lua_source': scriptLenta,
+    'lua_source': scriptLenta_old,
     'query': query,
     'timeout': 40
     })
-
     appendDataToJson(resp.json(), 'all_comments.json')
 
 def countCom():
@@ -74,9 +75,8 @@ def countCom():
         print(len(neutral_comments))
 
 if __name__ == '__main__':
-    #getCommentsKP('https://www.kp.ru/daily/26956/4010007/', '4010007', '13')
+    #getCommentsKP('https://www.kp.ru/daily/26981/4040796/', '4040796', '13')
 
-    #getCommentsRT('кот Ассанжа')
-    #getCommentsRT('https://russian.rt.com/opinion/617412-prohanov-rossiya-tvorcy-mechtateli-gosudarstvo-vozrozhdenie')
+    #getCommentsLenta("тюрьма за репосты")
 
     countCom()
