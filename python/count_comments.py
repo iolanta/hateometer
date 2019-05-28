@@ -30,6 +30,27 @@ def new_preprocessor(str):
     str = re.sub("(\s+\)+)", ")", str)
     return str
 
+def PreprocessingNegations(comment):
+    comment = comment.lower()
+    comment = re.sub(r"([.,!;:\(\)])", r" \1 ", comment)
+    list_tokens = re.split("\\s+", comment)
+    is_neg = False
+
+    for i in range(0, len(list_tokens)):
+        if(list_tokens[i] == "не"):
+            if(not is_neg):
+                is_neg = True
+                list_tokens[i] = ''
+            else:
+                is_neg = False
+        elif(re.search("[.,!?;:()]", list_tokens[i]) != None):
+            is_neg = False
+        elif(is_neg):
+            list_tokens[i] = "не"+list_tokens[i]
+
+    comment = ' '.join(list_tokens)
+    return comment
+
 def toneComments(articles, model):
     results = []
     for article in articles['list_articles']:
@@ -39,7 +60,8 @@ def toneComments(articles, model):
         if(all_com == 0):
             results.append({"title": article['title'], "url": article['url'], "all": all_com, "pos": 0, "neg": 0})
         else:
-            decision_list = loaded_model.decision_function(coms)
+            coms = list(map(PreprocessingNegations, coms))
+            decision_list = model.decision_function(coms)
 
             pos_com = 0
             neg_com = 0

@@ -72,14 +72,40 @@ def PreprocessingNegations(comment):
 
 
 def TestClassifier(all_comments, labels, sw_rus):
+    all_comments = list(map(ModifyComment, all_comments))
     all_comments = list(map(PreprocessingNegations, all_comments))
-    #all_comments = list(map(lambda str: re.sub('(не\s+)', 'не_', str), all_comments))
-    vect = CountVectorizer(ngram_range = (1, 2), lowercase = False, preprocessor = new_preprocessor,  token_pattern = "[а-яa-z]+[!|\\)|\\(]*", analyzer = "word")
+    vect = CountVectorizer(ngram_range = (1, 2), lowercase = False, preprocessor = new_preprocessor,  token_pattern = "[а-яa-z]+[!|\\)|\\(]*", analyzer = "word", stop_words = sw_rus)
 
     for clf in [MultinomialNB(), LinearSVC(), LogisticRegression(solver='liblinear')]:
         print(type(clf))
         print('precision: %f' % (cross_val_score(text_classifier(vect,
             TfidfTransformer(), clf), all_comments, labels, scoring = 'precision', cv = 5).mean()))
+        print('recall: %f' % (cross_val_score(text_classifier(vect,
+            TfidfTransformer(), clf), all_comments, labels, scoring = 'recall', cv = 5).mean()))
+        print('f1: %f' % (cross_val_score(text_classifier(vect,
+            TfidfTransformer(), clf), all_comments, labels, scoring = 'f1', cv = 5).mean()))
+
+
+def TestPreproc(all_comments, count_pos, count_neg):
+    all_comments = list(map(PreprocessingNegations, all_comments))
+
+    vectorizer = CountVectorizer(ngram_range = (1, 3), lowercase = False, preprocessor = new_preprocessor,  token_pattern = "[а-яa-z]+[!|\\)|\\(]*", analyzer = "word")
+    X = vectorizer.fit_transform(all_comments[0:count_pos-1])
+    print(len(vectorizer.get_feature_names()))
+
+    vectorizer_neg = CountVectorizer(ngram_range = (1, 3), lowercase = False, preprocessor = new_preprocessor,  token_pattern = "[а-яa-z]+[!|\\)|\\(]*", analyzer = "word")
+    X = vectorizer_neg.fit_transform(all_comments[count_pos:count_pos+count_neg])
+    print(len(vectorizer_neg.get_feature_names()))
+
+def FitModel(all_comments, labels):
+    all_comments = list(map(ModifyComment, all_comments))
+    all_comments = list(map(PreprocessingNegations, all_comments))
+    model = text_classifier(CountVectorizer(ngram_range = (1, 2), lowercase = False, preprocessor = new_preprocessor,  token_pattern = "[а-яa-z]+[!|\\)|\\(]*", analyzer = "word"),
+        TfidfTransformer(), LinearSVC())
+    model.fit(all_comments, labels)
+
+    with open('model.bin', 'wb') as f:
+        pickle.dump(model, f)
 
 if __name__ == '__main__':
     pos_comments = []
@@ -89,21 +115,19 @@ if __name__ == '__main__':
         pos_comments = json.loads(f1.read())
         neg_comments = json.loads(f2.read())
 
-    count_pos = 520
-    count_neg = 520
+    count_pos = 600
+    count_neg = 600
+
     all_comments = pos_comments[0:count_pos] + neg_comments[0:count_neg]
     labels = [1] * count_pos + [0] * count_neg
 
     sw_rus = stopwords.words('russian')
-    TestClassifier(all_comments, labels, sw_rus)
 
-    #model = text_classifier(CountVectorizer(ngram_range = (1, 3), lowercase = False, preprocessor = new_preprocessor,  token_pattern = "[а-яa-z]+[!|\\)|\\(]*", analyzer = "word"),
-    #    TfidfTransformer(), LogisticRegression(solver='liblinear'))
-    #model.fit(all_comments, labels)
-
-    #with open('model.bin', 'wb') as f:
-    #    pickle.dump(model, f)
+    #TestClassifier(all_comments, labels, sw_rus)
+    #FitModel(all_comments, labels)
 
     with open('model.bin', 'rb') as f:
         loaded_model = pickle.load(f)
-        print(loaded_model.decision_function(["На упаковку от конфеты МУ-МУ, коровку похожа))))"]))
+        print(loaded_model.decision_function(["Да этот сморчок уже для женщин не опасен.", "Главное чтобы голова не закружилась от таких стремительных успехов", "Прелесть...", "Хорошо хоть валежник разрешили бесплатно собирать."]))
+        print(loaded_model.decision_function(["д'Артаньян? Или Тер-д'Артаньян?", "Женщину Морганом не назовут.", "Ты тоже можешь набрать кредитов и жить в комфорте и достатке.", "Орел вроде как совершенно китайская компания, не?"]))
+        print(loaded_model.decision_function(["Получается одна большая корзина с яйцами, рискованно...", "лично я жду появления новых серий Сватов, а не всякую американскую муть.",  "Помолчи мусор с московских свалок.", "Смотри-ка, даже записные путирасты громят Милонова, будто он не член Единой России."]))
